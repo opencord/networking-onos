@@ -38,8 +38,15 @@ class ONOSMechanismDriver(api.MechanismDriver):
     def __init__(self):
         self.onos_path = cfg.CONF.onos.url_path
         self.onos_auth = (cfg.CONF.onos.username, cfg.CONF.onos.password)
-        self.vif_type = portbindings.VIF_TYPE_OVS
-        self.vif_details = {portbindings.CAP_PORT_FILTER: True}
+        self.ovs_vhu_sockdir = '/var/run/openvswitch/'
+        self.port_prefix = 'vhu'
+        self.vif_type = portbindings.VIF_TYPE_VHOST_USER
+        self.vif_details = {
+            portbindings.CAP_PORT_FILTER: True, # verify
+            portbindings.VHOST_USER_MODE:
+            portbindings.VHOST_USER_MODE_CLIENT,
+            portbindings.VHOST_USER_OVS_PLUG: True
+        }
 
     def initialize(self):
         # No action required as of now. Can be extended in
@@ -115,9 +122,12 @@ class ONOSMechanismDriver(api.MechanismDriver):
         # Prepared porting binding data
         for segment in context.segments_to_bind:
             if self.check_segment(segment):
+                vif_details = self.vif_details.copy()
+                vif_details[portbindings.VHOST_USER_SOCKET] = self.ovs_vhu_sockdir + \
+                    (self.port_prefix + context.current['id'])[:14]
                 context.set_binding(segment[api.ID],
                                     self.vif_type,
-                                    self.vif_details,
+                                    vif_details,
                                     status=n_const.PORT_STATUS_ACTIVE)
                 LOG.debug("Port bound successful for segment: %s", segment)
                 return
