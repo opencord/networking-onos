@@ -46,7 +46,7 @@ class ONOSMechanismDriver(api.MechanismDriver):
         self.onos_path = cfg.CONF.onos.url_path
         self.onos_auth = (cfg.CONF.onos.username, cfg.CONF.onos.password)
         self.ovs_vhu_sockdir = '/var/run/openvswitch/'
-        self.port_prefix = 'vhu'
+        self.port_prefix = 'tap'
         self.vif_type = VIF_TYPE_VHOST_USER
         self.vif_details = {
             portbindings.CAP_PORT_FILTER: True, # verify
